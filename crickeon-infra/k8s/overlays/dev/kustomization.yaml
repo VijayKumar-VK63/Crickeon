@@ -1,0 +1,6 @@
+resources:
+  - ../../base/namespace.yaml
+  - ../../base/api-gateway.yaml
+  - ../../base/notification-service.yaml
+  - ../../base/platform-services.yaml
+  - ../../base/monitoring.yaml

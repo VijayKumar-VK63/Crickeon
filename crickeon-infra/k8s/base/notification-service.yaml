@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: lamcl
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: ghcr.io/your-org/lamcl-notification-service:latest
+          ports:
+            - containerPort: 3006
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1200m
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: lamcl
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: 3006
+      targetPort: 3006

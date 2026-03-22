@@ -1,0 +1,39 @@
+{
+  "name": "crickeon-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "crickeon-backend",
+    "crickeon-backend/apps/*",
+    "crickeon-backend/packages/*",
+    "crickeon-frontend",
+    "crickeon-infra"
+  ],
+  "scripts": {
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "npm run build --workspace @crickeon/backend",
+    "build:frontend": "npm run build --workspace @crickeon/frontend",
+    "dev:backend": "npm run dev --workspace @crickeon/backend",
+    "dev:frontend": "npm run dev --workspace @crickeon/frontend",
+    "dev": "npm run docker:up && npm run start:mvp & npm run dev:frontend",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test --workspaces --if-present",
+    "test:watch": "npm run test -- --watch --workspaces --if-present",
+    "test:coverage": "npm run test -- --coverage --workspaces --if-present",
+    "test:integration": "npm run test:integration --workspace @crickeon/backend --if-present",
+    "prisma:generate": "npm run prisma:generate --workspace @crickeon/backend",
+    "prisma:migrate": "npm run prisma:migrate --workspace @crickeon/backend",
+    "prisma:seed": "npm run prisma:seed --workspace @crickeon/backend",
+    "prisma:studio": "npm run prisma:studio --workspace @crickeon/backend",
+    "build:mvp": "npm run build:mvp --workspace @crickeon/backend",
+    "start:mvp": "npm run start:mvp --workspace @crickeon/backend",
+    "docker:up": "npm run docker:up --workspace @crickeon/infra",
+    "docker:down": "npm run docker:down --workspace @crickeon/infra",
+    "docker:logs": "npm run docker:logs --workspace @crickeon/infra --if-present",
+    "setup": "npm install && npm run prisma:migrate && npm run prisma:seed",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules dist coverage"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@crickeon/match-engine-service",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "lint": "echo \"lint via root\"",
+    "test": "jest --config jest.config.js"
+  },
+  "dependencies": {
+    "@crickeon/infra-outbox": "file:../../packages/infra-outbox",
+    "@crickeon/infra-redis": "file:../../packages/infra-redis",
+    "@crickeon/shared-contracts": "file:../../packages/shared-contracts",
+    "@nestjs/common": "^11.1.17",
+    "@nestjs/core": "^11.1.17",
+    "@nestjs/platform-fastify": "^11.1.17",
+    "@prisma/client": "^5.22.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "ioredis": "^5.4.1",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,150 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: lamcl
+      POSTGRES_USER: lamcl
+      POSTGRES_PASSWORD: lamcl
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth-service:3001/api/v1
+      AUCTION_SERVICE_URL: http://auction-service:3002/api/v1
+      MATCH_SERVICE_URL: http://match-engine-service:3003/api/v1
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: super-secret-change
+    command: node crickeon-backend/apps/api-gateway/dist/apps/api-gateway/src/main.js
+    depends_on: [postgres, redis, rabbitmq]
+    ports: ['3000:3000']
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3001
+      JWT_SECRET: super-secret-change
+      JWT_REFRESH_SECRET: super-refresh-change
+      DATABASE_URL: postgresql://lamcl:lamcl@postgres:5432/lamcl
+      REDIS_URL: redis://redis:6379
+    command: node crickeon-backend/apps/auth-service/dist/apps/auth-service/src/main.js
+    depends_on: [postgres, redis]
+    ports: ['3001:3001']
+
+  auction-service:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://lamcl:lamcl@postgres:5432/lamcl
+      REDIS_URL: redis://redis:6379
+    command: node crickeon-backend/apps/auction-service/dist/apps/auction-service/src/main.js
+    depends_on: [postgres, redis, rabbitmq]
+    ports: ['3002:3002']
+
+  match-engine-service:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://lamcl:lamcl@postgres:5432/lamcl
+      REDIS_URL: redis://redis:6379
+    command: node crickeon-backend/apps/match-engine-service/dist/apps/match-engine-service/src/main.js
+    depends_on: [postgres, rabbitmq]
+    ports: ['3003:3003']
+
+  stats-service:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3004
+      DATABASE_URL: postgresql://lamcl:lamcl@postgres:5432/lamcl
+      REDIS_URL: redis://redis:6379
+      CRICKET_DATA_PROVIDER: cricapi
+    command: node crickeon-backend/apps/stats-service/dist/apps/stats-service/src/main.js
+    depends_on: [postgres, rabbitmq]
+    ports: ['3004:3004']
+
+  tournament-service:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3005
+      DATABASE_URL: postgresql://lamcl:lamcl@postgres:5432/lamcl
+    command: node crickeon-backend/apps/tournament-service/dist/apps/tournament-service/src/main.js
+    depends_on: [postgres, rabbitmq]
+    ports: ['3005:3005']
+
+  notification-service:
+    build:
+      context: ..
+      dockerfile: crickeon-infra/docker/Dockerfile.node
+    environment:
+      PORT: 3006
+      REDIS_URL: redis://redis:6379
+    command: node crickeon-backend/apps/notification-service/dist/apps/notification-service/src/main.js
+    depends_on: [redis, rabbitmq]
+    ports: ['3006:3006']
+
+  web-client:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ../:/app
+    command: sh -c "corepack enable; pnpm install --no-frozen-lockfile; pnpm --filter @crickeon/frontend dev --host"
+    ports:
+      - '5173:5173'
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.116.1
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - '4317:4317'
+      - '4318:4318'
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - '9090:9090'
+    depends_on: [api-gateway]
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - '3007:3000'
+    depends_on: [prometheus]
+
+volumes:
+  pg_data:

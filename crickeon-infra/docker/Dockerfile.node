@@ -1,0 +1,7 @@
+FROM node:20-alpine AS base
+WORKDIR /app
+COPY package.json pnpm-workspace.yaml ./
+COPY crickeon-backend ./crickeon-backend
+RUN corepack enable && pnpm install --no-frozen-lockfile
+RUN pnpm -r build --filter "./crickeon-backend..."
+CMD ["node", "crickeon-backend/apps/api-gateway/dist/apps/api-gateway/src/main.js"]

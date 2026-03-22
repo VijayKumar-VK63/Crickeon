@@ -1,0 +1,6 @@
+packages:
+  - crickeon-backend
+  - crickeon-backend/apps/*
+  - crickeon-backend/packages/*
+  - crickeon-frontend
+  - crickeon-infra

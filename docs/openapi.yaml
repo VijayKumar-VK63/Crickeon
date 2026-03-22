@@ -1,0 +1,299 @@
+openapi: 3.0.3
+info:
+  title: LAMCL API
+  version: 1.0.0
+servers:
+  - url: /api/v1
+paths:
+  /auth/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Tokens
+  /rooms/create:
+    post:
+      summary: Create lobby room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ownerId: { type: string }
+      responses:
+        '200': { description: Room created }
+  /auction/bid:
+    post:
+      summary: Place auction bid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomId, auctionId, cricketPlayerId, ownerId, amount]
+              properties:
+                roomId: { type: string }
+                auctionId: { type: string }
+                cricketPlayerId: { type: string }
+                ownerId: { type: string }
+                amount: { type: number }
+                idempotencyKey: { type: string }
+      responses:
+        '200':
+          description: Bid accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auction:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      roomId: { type: string }
+                      cricketPlayerId: { type: string }
+                      currentPrice: { type: number }
+                      endsAt: { type: number, description: Unix epoch in ms }
+                  event:
+                    type: object
+                    properties:
+                      type: { type: string }
+                      roomId: { type: string }
+                      auctionId: { type: string }
+                      cricketPlayerId: { type: string }
+                      ownerId: { type: string }
+                      amount: { type: number }
+                      currentPrice: { type: number }
+                      remainingMs: { type: number }
+                      occurredAt: { type: string }
+                  idempotentReplay: { type: boolean }
+                  demandIndex: { type: number }
+                  roleScarcityIndex: { type: number }
+  /auction/open:
+    post:
+      summary: Open auction for selected player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomId, cricketPlayerId, role]
+              properties:
+                roomId: { type: string }
+                cricketPlayerId: { type: string }
+                role: { type: string, enum: [batsman, bowler, all_rounder, wicket_keeper] }
+      responses:
+        '200': { description: Auction opened }
+  /auction/ai/recommend:
+    post:
+      summary: Get AI bidding recommendation (coach mode)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomId, auctionId, cricketPlayerId, ownerId, personality]
+              properties:
+                roomId: { type: string }
+                auctionId: { type: string }
+                cricketPlayerId: { type: string }
+                ownerId: { type: string }
+                personality: { type: string, enum: [conservative, aggressive, moneyball] }
+      responses:
+        '200': { description: Recommendation payload }
+  /auction/ai/autobid:
+    post:
+      summary: Trigger non-blocking AI virtual bidder action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomId, auctionId, cricketPlayerId, ownerId, personality]
+              properties:
+                roomId: { type: string }
+                auctionId: { type: string }
+                cricketPlayerId: { type: string }
+                ownerId: { type: string }
+                personality: { type: string, enum: [conservative, aggressive, moneyball] }
+                idempotencyKey: { type: string }
+      responses:
+        '200': { description: Queued result }
+  /auction/ai/dataset:
+    get:
+      summary: Build AI training dataset preview
+      responses:
+        '200': { description: Dataset summary and preview rows }
+  /wallet/{userId}:
+    get:
+      summary: Fetch wallet balance
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Wallet payload }
+  /wallet/deposit:
+    post:
+      summary: Credit wallet balance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, amount, reference]
+              properties:
+                userId: { type: string }
+                amount: { type: number }
+                reference: { type: string }
+      responses:
+        '200': { description: Wallet credited }
+  /league/entry:
+    post:
+      summary: Join paid league and debit entry fee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomId, ownerId, entryFee]
+              properties:
+                roomId: { type: string }
+                ownerId: { type: string }
+                entryFee: { type: number }
+                platformRakePct: { type: number }
+      responses:
+        '200': { description: League entry accepted }
+  /premium/subscribe:
+    post:
+      summary: Start premium subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, days]
+              properties:
+                userId: { type: string }
+                days: { type: number }
+      responses:
+        '200': { description: Premium enabled }
+  /growth/daily-reward/{userId}:
+    post:
+      summary: Claim daily reward
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Daily reward claimed }
+  /growth/leaderboard:
+    get:
+      summary: Retrieve ELO leaderboard
+      responses:
+        '200': { description: Leaderboard rows }
+  /auction/{auctionId}/timer:
+    get:
+      summary: Get cached/live auction timer
+      parameters:
+        - in: path
+          name: auctionId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Timer payload }
+  /auction/{auctionId}/history:
+    get:
+      summary: Retrieve bid history
+      parameters:
+        - in: path
+          name: auctionId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Bid list }
+  /players:
+    get:
+      summary: List available players
+      responses:
+        '200': { description: OK }
+  /match/start:
+    post:
+      summary: Start match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [matchId, teamAId, teamBId, tossWinner, decision, seed, pitch]
+              properties:
+                matchId: { type: string }
+                teamAId: { type: string }
+                teamBId: { type: string }
+                tossWinner: { type: string }
+                decision: { type: string, enum: [bat, bowl] }
+                seed: { type: integer }
+                pitch: { type: string, enum: [flat, green, dusty] }
+      responses:
+        '200': { description: Match accepted }
+  /stats/dashboard/top-players:
+    get:
+      summary: Top players analytics
+      responses:
+        '200': { description: Analytics rows }
+  /stats/dashboard/win-rates:
+    get:
+      summary: Team win rates analytics
+      responses:
+        '200': { description: Analytics rows }
+  /stats/dashboard/roi:
+    get:
+      summary: ROI per player analytics
+      responses:
+        '200': { description: Analytics rows }
+  /stats/real/sync:
+    post:
+      summary: Trigger real-world cricket data sync
+      responses:
+        '200': { description: Sync complete }
+  /stats/real/player/{playerId}/boost:
+    get:
+      summary: Real-world performance boost for player
+      parameters:
+        - in: path
+          name: playerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Boost payload }
+components: {}
+x-websocket-events:
+  namespace: /live
+  events:
+    - player_joined
+    - bid_updated
+    - auction_timer
+    - match_update
+    - score_update

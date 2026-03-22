@@ -1,0 +1,14 @@
+{
+  "name": "@crickeon/infra-locks",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "./*": "./dist/*.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "echo \"lint via root\"",
+    "test": "echo \"no tests\""
+  }
+}

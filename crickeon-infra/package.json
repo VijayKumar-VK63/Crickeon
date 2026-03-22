@@ -1,0 +1,9 @@
+{
+  "name": "@crickeon/infra",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "docker:up": "docker compose -f crickeon-infra/docker-compose.yml up --build",
+    "docker:down": "docker compose -f crickeon-infra/docker-compose.yml down -v"
+  }
+}

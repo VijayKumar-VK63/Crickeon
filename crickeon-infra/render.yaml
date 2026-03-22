@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: lamcl-mvp-backend
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm install && npm run build:mvp
+    startCommand: npm run start:mvp
+    autoDeploy: true
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: AUTH_SERVICE_URL
+        value: http://127.0.0.1:3001/api/v1
+      - key: AUCTION_SERVICE_URL
+        value: http://127.0.0.1:3002/api/v1
+      - key: MATCH_SERVICE_URL
+        value: http://127.0.0.1:3003/api/v1
+      - key: STATS_SERVICE_URL
+        value: http://127.0.0.1:3004/api/v1
+      - key: CRICKET_DATA_PROVIDER
+        value: cricapi
+      - key: CRICAPI_KEY
+        sync: false
+      - key: SPORTRADAR_API_KEY
+        sync: false
+      - key: EMAIL_WEBHOOK_URL
+        sync: false
+      - key: PUSH_WEBHOOK_URL
+        sync: false

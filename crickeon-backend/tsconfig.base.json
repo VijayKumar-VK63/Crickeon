@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@crickeon/shared-contracts": ["packages/shared-contracts/src"],
+      "@crickeon/infra-redis/*": ["packages/infra-redis/src/*"],
+      "@crickeon/infra-locks/*": ["packages/infra-locks/src/*"],
+      "@crickeon/infra-outbox/*": ["packages/infra-outbox/src/*"]
+    },
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  }
+}
